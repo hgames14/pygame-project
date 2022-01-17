@@ -23,9 +23,32 @@ class Game:
             image = image.convert_alpha()
         return image
 
+    def get_record(self):
+        con = sqlite3.connect("records.db")
+        cur = con.cursor()
+
+
+    def game_over(self):
+        self.running = False
+        main = Main()
+
+    def update_text(self):
+        self.score_text_str = "Score: " + str(self.score)
+        self.life_text_str = "Lifes: " + str(self.lifes)
+        self.score_text = self.font.render(self.score_text_str, 1, (255, 255, 255))
+        self.life_text = self.font.render(self.life_text_str, 1, (255, 255, 255))
+
     def astro_move(self):
         self.astro.rect.y += self.astro_speed / self.fps
         self.render(self.screen)
+
+    def check_collide(self):
+        if pygame.sprite.collide_mask(self.player, self.astro):
+            return True
+
+    def create_new_astro(self):
+        self.Astro.remove(self.astro)
+        self.create_astro()
 
     def create_astro(self):
         self.Astro = pygame.sprite.Group()
@@ -35,7 +58,8 @@ class Game:
         self.astro.rect = self.astro.image.get_rect()
         self.astro.rect.x = random.randint(0, 725)
         self.astro.rect.y = 25
-        self.astro_speed = 200
+
+        self.astro_mask = pygame.mask.from_surface(self.astro.image)
         self.Astro.add(self.astro)
         self.Astro.draw(self.screen)
 
@@ -48,6 +72,7 @@ class Game:
         self.player.rect.x = 400
         self.player.rect.y = 800
         self.Player.add(self.player)
+        self.player_mask = pygame.mask.from_surface(self.player.image)
         self.screen.blit(self.bg, (0, 0))
         self.Player.draw(self.screen)
 
@@ -56,6 +81,8 @@ class Game:
         self.screen.blit(self.bg, (0, 0))
         self.Player.draw(self.screen)
         self.Astro.draw(self.screen)
+        self.screen.blit(self.life_text, (25, 25))
+        self.screen.blit(self.score_text, (875, 25))
 
 
     def move_right(self, screen, player, velocity):
@@ -75,8 +102,8 @@ class Game:
         self.render(self.screen)
 
     def play(self):
-        running = True
-        while running:
+        self.running = True
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     print(1)
@@ -86,7 +113,7 @@ class Game:
                     if self.direction == "LEFT":
                         self.move_left(self.screen, self.Player, self.player_speed * 50)
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
             sp = pygame.key.get_pressed()
             if sp[pygame.K_RIGHT]:
                 self.move_right(self.screen, self.Player, self.player_speed)
@@ -96,6 +123,20 @@ class Game:
                 self.pause()
             if sp[pygame.K_DOWN]:
                 self.unpause()
+            if self.astro.rect.y > 1000 and not self.check_collide():
+
+                self.lifes -= 1
+                if self.lifes == 0:
+                    self.game_over()
+                self.create_astro()
+                self.update_text()
+                self.astro_speed -= 50
+            if self.check_collide():
+
+                self.score += 1
+                self.astro_speed += 20
+                self.update_text()
+                self.create_new_astro()
             self.astro_move()
             self.clock.tick(self.fps)
             pygame.display.flip()
@@ -108,9 +149,17 @@ class Game:
 
     def __init__(self):
         pygame.init()
+        self.font = pygame.font.SysFont("microsofttaile", 24)
+        self.lifes = 3
+        self.score = 0
+        self.score_text_str = "Score: " + str(self.score)
+        self.life_text_str = "Lifes: " + str(self.lifes)
+        self.score_text = self.font.render(self.score_text_str, 1, (255, 255, 255))
+        self.life_text = self.font.render(self.life_text_str, 1, (255, 255, 255))
         self.clock = pygame.time.Clock()
         self.fps = 60
         self.player_speed = 200
+        self.astro_speed = 200
         self.size = 1000, 1000
         self.screen = pygame.display.set_mode(self.size)
         self.bg = pygame.image.load("data/space.png")
@@ -118,5 +167,37 @@ class Game:
         self.screen.blit(self.bg, (0, 0))
         self.create_astro()
         self.player_init()
-        self.play()
-session = Game()
+
+
+
+class Main:
+    def __init__(self):
+        pygame.init()
+        self.size = 1000, 1000
+        self.screen = pygame.display.set_mode(self.size)
+        self.bg = pygame.image.load("data/bg.png")
+        pygame.font.init()
+        self.font = pygame.font.SysFont("microsofttaile", 24)
+        self.startsign = self.font.render("Start", 1, (255, 255, 255))
+        self.start_button = pygame.draw.rect(self.screen,(255,255,240),(400, 600, 200, 50), 5)
+        self.render()
+
+    def render(self):
+        self.working = True
+        while self.working:
+            for event in pygame.event.get():
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if 400 <= pygame.mouse.get_pos()[0] <= 600 and 600 <= pygame.mouse.get_pos()[1] <= 650:
+                        self.working = False
+                        session = Game()
+                        session.play()
+                if event.type == pygame.QUIT:
+                    self.working = False
+            self.screen.blit(self.bg, (0, 0))
+            self.start_button = pygame.draw.rect(self.screen, (255, 255, 240), (400, 600, 200, 50), 5)
+
+            self.screen.blit(self.startsign, (475, 610))
+            pygame.display.flip()
+
+main = Main()
