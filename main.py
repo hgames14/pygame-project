@@ -71,13 +71,19 @@ class Game:
         self.Astro.remove(self.astro)
         self.create_astro()
 
+    def set_speed(self, speed):
+        self.player_speed = speed
+        if speed == 500:
+            self.counter = 10
+
     def create_astro(self):
         self.Astro = pygame.sprite.Group()
         self.astro = pygame.sprite.Sprite()
         self.heal = False
         self.bomb = False
+        self.speed = False
         if Game.score >= 15:
-            a = random.choice([1, 2] + [0] * 18)
+            a = random.choice([1, 2, 3] + [0] * 17)
             if a == 1:
                 self.heal = True
                 self.astro.image = load_image("heal.png")
@@ -86,6 +92,9 @@ class Game:
             if a == 2:
                 self.bomb = True
                 self.astro.image = load_image("bomb.png")
+            if a == 3:
+                self.speed = True
+                self.astro.image = load_image("speed.png")
             self.astro.image = pygame.transform.scale(self.astro.image, (75, 75))
             self.astro.rect = self.astro.image.get_rect()
             self.astro.rect.x = random.randint(0, 725)
@@ -144,9 +153,9 @@ class Game:
                     print(1)
                     print(self.direction)
                     if self.direction == "RIGHT":
-                        self.move_right(self.screen, self.Player, self.player_speed * 50)
+                        self.move_right(self.screen, self.Player, 10000)
                     if self.direction == "LEFT":
-                        self.move_left(self.screen, self.Player, self.player_speed * 50)
+                        self.move_left(self.screen, self.Player, 10000)
                 if event.type == pygame.KEYDOWN:
                     sp = pygame.key.get_pressed()
                     if sp[pygame.K_UP] and self.unpaused:
@@ -161,28 +170,41 @@ class Game:
             if sp[pygame.K_LEFT]:
                 self.move_left(self.screen, self.Player, self.player_speed)
             if self.astro.rect.y > 1000 and not self.check_collide():
-                if not self.heal and not self.bomb:
+                if not self.heal and not self.bomb and not self.speed:
                     self.lifes -= 1
                 if self.lifes == 0:
                     self.game_over()
                 self.create_astro()
                 self.update_text()
                 self.astro_speed -= 50
+                self.counter -= 1
+                if self.counter == 0:
+                    self.set_speed(200)
             if self.check_collide():
                 if self.heal:
+                    pygame.mixer.music.load("Sounds/heal.mp3")
                     self.lifes += 1
                 elif self.bomb:
+                    pygame.mixer.music.load("Sounds/bomb.mp3")
                     self.lifes -= 1
                     if self.lifes == 0:
                         self.game_over()
+                elif self.speed:
+                    pygame.mixer.music.load("Sounds/speed.mp3")
+                    self.set_speed(500)
                 else:
+                    pygame.mixer.music.load("Sounds/catch.mp3")
                     Game.score += 1
                 self.astro_speed += 20
-                if self.astro_speed > 1800:
-                    self.astro_speed = 1800
+                if self.astro_speed > 1700:
+                    self.astro_speed = 1700
                 print(self.astro_speed)
                 self.update_text()
                 self.create_new_astro()
+                self.counter -= 1
+                if self.counter == 0:
+                    self.set_speed(200)
+                pygame.mixer.music.play(0)
             self.astro_move()
             self.clock.tick(self.fps)
             pygame.display.flip()
@@ -211,7 +233,9 @@ class Game:
         self.life_text = self.font.render(self.life_text_str, 1, WHITE)
         self.clock = pygame.time.Clock()
         self.fps = 60
+        self.counter = -1
         self.player_speed = 200
+        self.direction = None
         self.astro_speed = 200
         self.size = 1000, 1000
         self.screen = pygame.display.set_mode(self.size)
