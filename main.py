@@ -130,6 +130,8 @@ class Game:
         self.Astro.draw(self.screen)
         self.screen.blit(self.life_text, (25, 25))
         self.screen.blit(self.score_text, (875, 25))
+        pygame.draw.rect(self.screen, WHITE, (800, 900, 125, 50), 5)
+        self.screen.blit(self.exit, (840, 910))
 
     def move_right(self, screen, player, velocity):
         self.player.rect.x += velocity / self.fps
@@ -152,6 +154,11 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     print(1)
                     print(self.direction)
+                    if 800 <= pygame.mouse.get_pos()[0] <= 925 and 900 <= pygame.mouse.get_pos()[1] <= 950:
+                        pygame.mixer.music.load("Sounds/click.mp3")
+                        pygame.mixer.music.play(0)
+                        self.running = False
+                        main = Main()
                     if self.direction == "RIGHT" and self.unpaused:
                         self.move_right(self.screen, self.Player, 10000)
                     if self.direction == "LEFT" and self.unpaused:
@@ -231,6 +238,7 @@ class Game:
         self.life_text_str = "Lifes: " + str(self.lifes)
         self.score_text = self.font.render(self.score_text_str, 1, WHITE)
         self.life_text = self.font.render(self.life_text_str, 1, WHITE)
+        self.exit = self.font.render("Exit", 1, WHITE)
         self.clock = pygame.time.Clock()
         self.fps = 60
         self.counter = -1
@@ -270,11 +278,14 @@ class Main:
         while self.working:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.mixer.music.load("Sounds/click.mp3")
                     if 400 <= pygame.mouse.get_pos()[0] <= 600 and 600 <= pygame.mouse.get_pos()[1] <= 650:
+                        pygame.mixer.music.play(0)
                         self.working = False
                         session = Game()
                         session.play()
                     if 25 <= pygame.mouse.get_pos()[0] <= 225 and 25 <= pygame.mouse.get_pos()[1] <= 75:
+                        pygame.mixer.music.play(0)
                         self.working = False
                         shop = Shop()
                 if event.type == pygame.QUIT:
@@ -313,11 +324,14 @@ class EndScreen:
                 if event.type == pygame.QUIT:
                     self.working = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.mixer.music.load("Sounds/click.mp3")
                     if 100 <= pygame.mouse.get_pos()[0] <= 400 and 200 <= pygame.mouse.get_pos()[1] <= 275:
+                        pygame.mixer.music.play(0)
                         self.working = False
                         session = Game()
                         session.play()
                     if 100 <= pygame.mouse.get_pos()[0] <= 400 and 400 <= pygame.mouse.get_pos()[1] <= 475:
+                        pygame.mixer.music.play(0)
                         self.working = False
                         main = Main()
             self.screen.blit(self.bg, (0, 0))
@@ -357,13 +371,21 @@ class Shop:
                     self.working = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if 25 <= pygame.mouse.get_pos()[0] <= 175 and 25 <= pygame.mouse.get_pos()[1] <= 75:
+                        pygame.mixer.music.load("Sounds/click.mp3")
+                        pygame.mixer.music.play(0)
                         self.working = False
                         main = Main()
                     if 25 <= pygame.mouse.get_pos()[0] <= 225 and 125 <= pygame.mouse.get_pos()[1] <= 250:
+                        pygame.mixer.music.load("Sounds/change.mp3")
+                        pygame.mixer.music.play(0)
                         player_image = "ufo.png"
                     if 225 <= pygame.mouse.get_pos()[0] <= 425 and 125 <= pygame.mouse.get_pos()[1] <= 250:
+                        pygame.mixer.music.load("Sounds/change.mp3")
+                        pygame.mixer.music.play(0)
                         player_image = "ufo1.png"
                     if 425 <= pygame.mouse.get_pos()[0] <= 625 and 125 <= pygame.mouse.get_pos()[1] <= 250:
+                        pygame.mixer.music.load("Sounds/change.mp3")
+                        pygame.mixer.music.play(0)
                         player_image = "ufo2.png"
                     print(player_image)
             self.screen.blit(self.bg, (0, 0))
