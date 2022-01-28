@@ -172,9 +172,9 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
             sp = pygame.key.get_pressed()
-            if sp[pygame.K_RIGHT]:
+            if sp[pygame.K_d] or sp[pygame.K_RIGHT]:
                 self.move_right(self.screen, self.Player, self.player_speed)
-            if sp[pygame.K_LEFT]:
+            if sp[pygame.K_LEFT] or sp[pygame.K_a]:
                 self.move_left(self.screen, self.Player, self.player_speed)
             if self.astro.rect.y > 1000 and not self.check_collide():
                 if not self.heal and not self.bomb and not self.speed:
@@ -184,6 +184,8 @@ class Game:
                 self.create_astro()
                 self.update_text()
                 self.astro_speed -= 50
+                if self.astro_speed < 100:
+                    self.astro_speed = 100
                 self.counter -= 1
                 if self.counter == 0:
                     self.set_speed(200)
@@ -270,6 +272,9 @@ class Main:
         self.record_text = "Your record: " + get_record()
         self.recordsign = self.font.render(self.record_text, 1, WHITE)
         self.start_button = pygame.draw.rect(self.screen, WHITE, (400, 600, 200, 50), 5)
+        self.movement = self.font.render("D/-->  -  move right", 1, WHITE)
+        self.movement1 = self.font.render("A/<--  -  move left", 1, WHITE)
+        self.movement2 = self.font.render("Any mouse button  -  dash", 1, WHITE)
         self.shop = self.font.render("Skins", 1, WHITE)
         self.render()
 
@@ -292,6 +297,9 @@ class Main:
                     self.working = False
             self.screen.blit(self.bg, (0, 0))
             pygame.draw.rect(self.screen, WHITE, (25, 25, 200, 50), 5)
+            self.screen.blit(self.movement, (25, 100))
+            self.screen.blit(self.movement1, (25, 150))
+            self.screen.blit(self.movement2, (25, 200))
             self.screen.blit(self.shop, (90, 35))
             self.start_button = pygame.draw.rect(self.screen, WHITE, (400, 600, 200, 50), 5)
             self.screen.blit(self.recordsign, (425, 660))
